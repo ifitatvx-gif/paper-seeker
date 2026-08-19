@@ -1,0 +1,14 @@
+{
+  "name": "academic-paper-search",
+  "version": "1.0.0",
+  "description": "按专业/领域 + 大学名称查询对应教授的论文与综述，并提供链接与 Word 文档导出",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "docx": "^9.5.1",
+    "express": "^4.21.2"
+  },
+  "license": "MIT"
+}
