@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>论文seeker · 单文件版</title>
+  <!-- Word 生成库（浏览器版），加载失败时自动降级为 HTML .doc 导出 -->
+  <script src="https://cdn.jsdelivr.net/npm/docx@9.7.1/dist/index.iife.js" defer></script>
+  <style>
+    :root {
+      --bg: #f4f6fb; --card: #ffffff; --primary: #2f6fed; --primary-dark: #1f56c4;
+      --text: #1f2733; --muted: #6b7280; --border: #e5e9f2; --accent: #0ea47a;
+      --radius: 14px; --shadow: 0 6px 24px rgba(30, 41, 59, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    .hero { background: linear-gradient(135deg, #1f56c4 0%, #2f6fed 55%, #3f86ff 100%); color: #fff; padding: 40px 20px 56px; }
+    .hero-inner { max-width: 960px; margin: 0 auto; }
+    .hero h1 { margin: 0 0 6px; font-size: 28px; }
+    .subtitle { margin: 0; opacity: 0.92; font-size: 14.5px; }
+    .badge { display: inline-block; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35); padding: 2px 10px; border-radius: 20px; font-size: 12px; margin-top: 10px; }
+    .container { max-width: 960px; margin: -34px auto 40px; padding: 0 16px; }
+    .search-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; }
+    .field-row { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
+    .input-group { flex: 1 1 220px; display: flex; flex-direction: column; gap: 6px; }
+    .input-group label { font-size: 13px; color: var(--muted); font-weight: 600; }
+    .input-group input { padding: 11px 12px; border: 1px solid var(--border); border-radius: 9px; font-size: 15px; transition: border-color 0.15s, box-shadow 0.15s; }
+    .input-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(47,111,237,0.14); }
+    .primary-btn { padding: 11px 26px; border: none; border-radius: 9px; background: var(--primary); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.15s, transform 0.05s; white-space: nowrap; }
+    .primary-btn:hover { background: var(--primary-dark); }
+    .primary-btn:active { transform: translateY(1px); }
+    .primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .hint { margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+    .hint a { color: var(--primary); text-decoration: none; }
+    .help-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-top: 16px; overflow: hidden; }
+    .help-card summary { cursor: pointer; padding: 14px 18px; font-size: 15px; font-weight: 700; color: var(--primary); list-style: none; user-select: none; }
+    .help-card summary::-webkit-details-marker { display: none; }
+    .help-card summary::after { content: "▾"; float: right; transition: transform 0.2s; color: var(--muted); }
+    .help-card[open] summary::after { transform: rotate(180deg); }
+    .help-body { padding: 0 18px 18px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text); }
+    .help-body h3 { font-size: 14.5px; margin: 16px 0 6px; color: var(--text); }
+    .help-body ol, .help-body ul { margin: 6px 0; padding-left: 22px; }
+    .help-body li { margin: 5px 0; }
+    .help-note { background: #fff7e6; border: 1px solid #ffe1a8; border-radius: 8px; padding: 9px 12px; font-size: 13px; color: #92400e; margin: 14px 0 0; }
+    .status { margin-top: 18px; padding: 14px 16px; border-radius: 10px; font-size: 14px; }
+    .status.info { background: #eef4ff; color: #1f56c4; }
+    .status.error { background: #fdecec; color: #b42318; }
+    .status .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; margin-right: 8px; vertical-align: -2px; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .results { margin-top: 22px; }
+    .review-panel { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 16px; border-left: 4px solid var(--accent); }
+    .panel-title { font-size: 16px; margin: 0 0 12px; color: #0b7a55; }
+    .cn-panel { border-left-color: #e05252; }
+    .cn-panel .panel-title { color: #b02a2a; }
+    .summary { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .summary .meta strong { font-size: 17px; }
+    .summary .meta .tag { display: inline-block; background: #eef4ff; color: #1f56c4; padding: 2px 9px; border-radius: 20px; font-size: 12px; margin-left: 8px; }
+    .export-all-btn { border: none; background: var(--accent); color: #fff; padding: 9px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .export-all-btn:hover { filter: brightness(0.95); }
+    .summary-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .translate-btn { border: 1px solid var(--border); background: #fff; color: #0b7a55; padding: 8px 14px; border-radius: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .translate-btn:hover { background: #eefaf5; }
+    .zh-title { font-size: 13.5px; color: #0b7a55; margin-top: 3px; line-height: 1.5; }
+    .professor-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 16px; }
+    .prof-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+    .prof-name { font-size: 19px; font-weight: 700; margin: 0; }
+    .prof-name .orcid { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 8px; }
+    .prof-affil { font-size: 13px; color: var(--muted); margin: 2px 0 6px; }
+    .prof-stats { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 12px; }
+    .stat-pill { background: #f3f5f9; border: 1px solid var(--border); padding: 3px 11px; border-radius: 20px; font-size: 12.5px; color: var(--text); }
+    .stat-pill b { color: var(--primary); }
+    .export-one-btn { border: 1px solid var(--border); background: #fff; color: var(--primary); padding: 7px 13px; border-radius: 8px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+    .export-one-btn:hover { background: #f3f6ff; }
+    .tab-bar { display: flex; gap: 8px; margin-bottom: 10px; }
+    .tab { border: 1px solid var(--border); background: #fafbfe; padding: 7px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--muted); }
+    .tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .tab .count { opacity: 0.75; font-weight: 500; }
+    .work-list { display: flex; flex-direction: column; gap: 10px; }
+    .work-item { border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px; background: #fcfdff; }
+    .work-title { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+    .work-title a { color: var(--text); text-decoration: none; }
+    .work-title a:hover { color: var(--primary); text-decoration: underline; }
+    .work-meta { font-size: 12.5px; color: var(--muted); }
+    .work-links { margin-top: 7px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .link-btn { display: inline-block; padding: 4px 11px; border-radius: 6px; font-size: 12px; text-decoration: none; font-weight: 600; border: 1px solid transparent; }
+    .link-btn.doi { background: #eef4ff; color: #1f56c4; }
+    .link-btn.pdf { background: #e9f7f1; color: #0b7a55; }
+    .link-btn.oa { background: #f3f5f9; color: #4b5563; }
+    .link-btn:hover { filter: brightness(0.96); }
+    .empty-note { color: var(--muted); font-size: 13px; padding: 6px 2px; }
+    .footer { text-align: center; color: var(--muted); font-size: 12px; padding: 24px 16px 40px; }
+    .hidden { display: none; }
+    @media (max-width: 640px) { .field-row { flex-direction: column; align-items: stretch; } .primary-btn { width: 100%; } }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <h1>📚 论文seeker</h1>
+      <p class="subtitle">输入「大学名称」和「专业 / 领域」，检索该机构研究人员的论文与综述，并导出 Word 文档</p>
+      <span class="badge">单文件版 · 无需安装 · 双击本文件即可使用</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="search-card">
+      <div class="field-row">
+        <div class="input-group">
+          <label for="university">🏛 大学名称</label>
+          <input id="university" type="text" placeholder="例如：清华大学 / Tsinghua University" autocomplete="off" />
+        </div>
+        <div class="input-group">
+          <label for="field">🔬 专业 / 领域</label>
+          <input id="field" type="text" list="field-suggestions" placeholder="例如：机器学习 / Machine learning" autocomplete="off" />
+          <datalist id="field-suggestions"></datalist>
+        </div>
+        <button id="search-btn" class="primary-btn">查询</button>
+      </div>
+      <div class="hint">💡 领域支持中文 / 英文 / 简称（如 ML、AI），并支持模糊匹配；数据来源：<a href="https://openalex.org" target="_blank" rel="noopener">OpenAlex</a> 学术数据库</div>
+    </section>
+
+    <details class="help-card" open>
+      <summary>📖 使用说明（点击可收起）</summary>
+      <div class="help-body">
+        <h3>① 如何查询</h3>
+        <ol>
+          <li>在「大学名称」输入高校名称，<b>中英文均可</b>（如「清华大学」「Tsinghua University」）；</li>
+          <li>在「专业/领域」输入领域名称，<b>中英文、简称均可</b>，支持模糊匹配（如「机器学习」「machine learning」「ML」「machine learn」）；</li>
+          <li>点击「查询」，等待约 5–20 秒即可看到结果。</li>
+        </ol>
+
+        <h3>② 结果怎么看</h3>
+        <ul>
+          <li><b>领域代表性综述</b>：该大学在该领域被引最高的综述文章；</li>
+          <li><b>研究人员卡片</b>：每位研究人员分「论文」与「综述」两个标签页；</li>
+          <li>「论文」= 研究型论文，「综述」= 文献综述 / 调查类文章；</li>
+          <li>每条文献按「被引次数」从高到低排序，并标注年份、期刊、作者。</li>
+        </ul>
+
+        <h3>③ 链接含义</h3>
+        <ul>
+          <li><b>DOI</b>：论文的正式链接（数字对象标识符），点击直达原文；</li>
+          <li><b>PDF</b>：开放获取的免费全文下载；</li>
+          <li><b>开放获取页 / OpenAlex</b>：出版商页面或 OpenAlex 数据库记录页。</li>
+        </ul>
+
+        <h3>④ 导出 Word 文档</h3>
+        <ul>
+          <li>点击「导出全部 Word」下载所有研究人员的结果；</li>
+          <li>或点击某教授卡片右上角「导出此教授 Word」单独导出；</li>
+          <li>生成的 .docx 包含标题、年份、期刊、被引量与可点击链接。</li>
+        </ul>
+
+        <p class="help-note">⚠️ 数据来源于 OpenAlex（免费学术数据库），结果仅供参考，正式引用前请核对原始文献。</p>
+      </div>
+    </details>
+
+    <section id="status" class="status hidden"></section>
+    <section id="results" class="results"></section>
+  </main>
+
+  <footer class="footer">
+    <p>数据来源于 OpenAlex（CC0 授权）· 结果按被引量排序 · 仅供参考，引用请核对原始文献</p>
+  </footer>
+
+  <script>
+  (function () {
+    "use strict";
+
+    var $ = function (s) { return document.querySelector(s); };
+    var universityInput = $("#university");
+    var fieldInput = $("#field");
+    var searchBtn = $("#search-btn");
+    var statusBox = $("#status");
+    var resultsBox = $("#results");
+    var datalist = $("#field-suggestions");
+    var currentResult = null;
+
+    var OA = "https://api.openalex.org";
+    var MAILTO = "paper-query@example.com";
+
+    var FIELD_DICT = {
+      "人工智能": "Artificial intelligence", "机器学习": "Machine learning", "深度学习": "Deep learning",
+      "计算机视觉": "Computer vision", "自然语言处理": "Natural language processing", "数据挖掘": "Data mining",
+      "计算机科学": "Computer science", "机器人": "Robotics", "强化学习": "Reinforcement learning",
+      "大数据": "Big data", "神经网络": "Artificial neural network", "计算机图形学": "Computer graphics",
+      "人机交互": "Human-computer interaction", "信息安全": "Computer security", "软件工程": "Software engineering",
+      "网络": "Computer network",
+      "生物信息学": "Bioinformatics", "生物化学": "Biochemistry", "分子生物学": "Molecular biology",
+      "基因组学": "Genomics", "细胞生物学": "Cell biology", "遗传学": "Genetics", "微生物学": "Microbiology",
+      "免疫学": "Immunology", "神经科学": "Neuroscience", "药理学": "Pharmacology", "肿瘤学": "Oncology",
+      "心血管": "Cardiology", "公共卫生": "Public health", "流行病学": "Epidemiology", "临床医学": "Medicine",
+      "医学影像": "Medical imaging",
+      "材料科学": "Materials science", "纳米技术": "Nanotechnology", "化学": "Chemistry",
+      "有机化学": "Organic chemistry", "无机化学": "Inorganic chemistry", "物理化学": "Physical chemistry",
+      "物理": "Physics", "量子力学": "Quantum mechanics", "凝聚态物理": "Condensed matter physics", "光学": "Optics",
+      "数学": "Mathematics", "统计学": "Statistics", "经济学": "Economics", "金融": "Finance",
+      "管理学": "Management", "心理学": "Psychology", "社会学": "Sociology", "教育学": "Education",
+      "环境科学": "Environmental science", "生态学": "Ecology", "地理学": "Geography", "地球科学": "Earth science",
+      "大气科学": "Atmospheric science", "遥感": "Remote sensing", "土木工程": "Civil engineering",
+      "机械工程": "Mechanical engineering", "电气工程": "Electrical engineering", "电子工程": "Electronic engineering",
+      "化学工程": "Chemical engineering", "生物医学工程": "Biomedical engineering",
+      "航空航天": "Aerospace engineering", "能源": "Energy",
+      "量子计算": "Quantum computing", "自动驾驶": "Autonomous driving", "推荐系统": "Recommender system",
+      "知识图谱": "Knowledge graph", "语音识别": "Speech recognition", "图像处理": "Image processing",
+      "区块链": "Blockchain", "物联网": "Internet of things", "密码学": "Cryptography", "半导体": "Semiconductor",
+      "操作系统": "Operating system", "数据库": "Database", "通信": "Telecommunications",
+      "控制工程": "Control engineering", "信号处理": "Signal processing", "优化": "Mathematical optimization",
+      "计算生物学": "Computational biology", "药物研发": "Drug discovery", "海洋科学": "Oceanography",
+      "地质学": "Geology", "天文学": "Astronomy"
+    };
+
+    var FIELD_ALIASES = {
+      "ai": "人工智能", "ml": "机器学习", "dl": "深度学习", "nlp": "自然语言处理",
+      "cv": "计算机视觉", "rl": "强化学习", "dm": "数据挖掘", "cs": "计算机科学",
+      "hci": "人机交互", "iot": "物联网", "qc": "量子计算"
+    };
+
+    var REVIEW_TYPES = { review: 1 };
+    var PAPER_TYPES = {
+      article: 1, "conference-paper": 1, "proceedings-article": 1, preprint: 1,
+      "book-chapter": 1, letter: 1, editorial: 1, report: 1, dissertation: 1
+    };
+
+    function typeLabel(t) {
+      var m = { review: "综述", article: "期刊论文", "conference-paper": "会议论文", "proceedings-article": "会议论文", preprint: "预印本", "book-chapter": "书章节", letter: "快报", editorial: "社论", report: "报告", dissertation: "学位论文" };
+      return m[t] || "论文";
+    }
+
+    function esc(s) {
+      return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+    function shortId(id) { return id ? id.split("/").pop() : null; }
+
+    async function oaFetch(pathname, retries) {
+      if (retries == null) retries = 2;
+      var lastErr = null;
+      for (var attempt = 0; attempt <= retries; attempt++) {
+        var url = OA + pathname + (pathname.indexOf("?") >= 0 ? "&" : "?") + "mailto=" + encodeURIComponent(MAILTO);
+        var ctrl = new AbortController();
+        var timer = setTimeout(function () { ctrl.abort(); }, 30000);
+        try {
+          var res = await fetch(url, { signal: ctrl.signal });
+          if (res.status === 429) { await sleep(800 * (attempt + 1)); continue; }
+          if (!res.ok) throw new Error("OpenAlex HTTP " + res.status);
+          return await res.json();
+        } catch (e) {
+          lastErr = e;
+          if (attempt < retries) await sleep(500 * (attempt + 1));
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+      throw lastErr || new Error("OpenAlex 请求失败");
+    }
+
+    function hasChinese(s) {
+      return /[\u4e00-\u9fff]/.test(s || "");
+    }
+
+    function pickZhName(list) {
+      if (!Array.isArray(list)) return null;
+      for (var i = 0; i < list.length; i++) {
+        if (list[i] && hasChinese(list[i])) return list[i];
+      }
+      return null;
+    }
+
+    async function resolveInstitution(q) {
+      var j = await oaFetch("/institutions?search=" + encodeURIComponent(q) + "&per-page=5");
+      var r = j.results && j.results[0];
+      if (!r) return null;
+      return { id: r.id, shortId: shortId(r.id), display_name: r.display_name, display_name_zh: pickZhName(r.display_name_alternatives), country_code: r.country_code };
+    }
+
+    async function resolveConcept(q) {
+      var j = await oaFetch("/concepts?search=" + encodeURIComponent(q) + "&per-page=8");
+      var results = j.results || [];
+      if (!results.length) return null;
+      var exact = null;
+      for (var i = 0; i < results.length; i++) {
+        if ((results[i].display_name || "").toLowerCase() === q.toLowerCase()) { exact = results[i]; break; }
+      }
+      var c = exact || results[0];
+      return { id: c.id, shortId: shortId(c.id), display_name: c.display_name, level: c.level, works_count: c.works_count };
+    }
+
+    function norm(s) {
+      return String(s == null ? "" : s).toLowerCase().replace(/\s+/g, " ").replace(/[·,，。.、;；:：\-—()（）[\]【】]/g, " ").trim();
+    }
+
+    function lev(a, b) {
+      var m = a.length, n = b.length, i, j, prev, curr, t;
+      if (!m) return n;
+      if (!n) return m;
+      prev = [];
+      for (j = 0; j <= n; j++) prev[j] = j;
+      for (i = 1; i <= m; i++) {
+        curr = [i];
+        for (j = 1; j <= n; j++) {
+          curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        }
+        t = prev; prev = curr; curr = t;
+      }
+      return prev[n];
+    }
+
+    function fieldCandidates() {
+      var cands = [], k;
+      for (k in FIELD_DICT) cands.push({ zh: k, en: FIELD_DICT[k], alias: "" });
+      for (k in FIELD_ALIASES) {
+        var zh = FIELD_ALIASES[k];
+        cands.push({ zh: zh, en: FIELD_DICT[zh] || zh, alias: k });
+      }
+      cands.forEach(function (c) { c.zhN = norm(c.zh); c.enN = norm(c.en); c.aliasN = norm(c.alias); });
+      return cands;
+    }
+
+    function findFieldMatch(input) {
+      var term = norm(input);
+      if (!term) return null;
+      var cands = fieldCandidates(), i, c, best;
+
+      // 1. 精确匹配（中/英/简称）
+      for (i = 0; i < cands.length; i++) {
+        c = cands[i];
+        if (c.zhN === term || c.enN === term || (c.aliasN && c.aliasN === term)) return { zh: c.zh, en: c.en };
+      }
+      // 2a. 前缀匹配（输入是词典条目的前缀）—— 按词典顺序取第一个（常见词在前）
+      for (i = 0; i < cands.length; i++) {
+        c = cands[i];
+        if ((c.zhN && c.zhN.indexOf(term) === 0) || (c.enN && c.enN.indexOf(term) === 0)) return { zh: c.zh, en: c.en };
+      }
+      // 2b. 包含匹配（输入是词典条目的子串）—— 优先更短更精确
+      best = null;
+      for (i = 0; i < cands.length; i++) {
+        c = cands[i];
+        if (c.zhN && c.zhN.indexOf(term) >= 0 && (!best || c.zhN.length < best.len)) best = { zh: c.zh, en: c.en, len: c.zhN.length };
+        if (c.enN && c.enN.indexOf(term) >= 0 && (!best || c.enN.length < best.len)) best = { zh: c.zh, en: c.en, len: c.enN.length };
+      }
+      if (best) return best;
+      // 3. 反向包含（输入中嵌有词典条目，如「机器学习 Machine Learning」）
+      best = null;
+      for (i = 0; i < cands.length; i++) {
+        c = cands[i];
+        if (c.zhN && term.indexOf(c.zhN) >= 0 && (!best || c.zhN.length > best.len)) best = { zh: c.zh, en: c.en, len: c.zhN.length };
+        if (c.enN && term.indexOf(c.enN) >= 0 && (!best || c.enN.length > best.len)) best = { zh: c.zh, en: c.en, len: c.enN.length };
+      }
+      if (best) return best;
+      // 4. 英文模糊（Levenshtein 距离，容忍拼写错误/字母换位；较长词放宽容差）
+      if (/^[a-z0-9 .-]+$/.test(term) && term.length >= 4) {
+        var tol = term.length >= 12 ? 3 : 2;
+        best = null;
+        for (i = 0; i < cands.length; i++) {
+          c = cands[i];
+          var d = lev(term, c.enN);
+          if (d <= tol && (!best || d < best.d)) best = { zh: c.zh, en: c.en, d: d };
+        }
+        if (best) return best;
+      }
+      return null;
+    }
+
+    async function resolveField(input) {
+      var term = (input || "").trim();
+      if (!term) return { error: "请输入专业 / 领域" };
+      var m = findFieldMatch(term);
+      if (m && m.en) {
+        var concept = await resolveConcept(m.en);
+        if (concept) {
+          var label = m.zh ? m.zh + "（" + m.en + "）" : m.en;
+          return { concept: concept, label: label };
+        }
+      }
+      // 未命中内置词典：英文直接交给 OpenAlex（其相关性/拼写容错较好）
+      if (/^[\x20-\x7E]+$/.test(term)) {
+        var concept2 = await resolveConcept(term);
+        if (concept2) return { concept: concept2, label: concept2.display_name };
+      }
+      return { error: "未能识别领域「" + term + "」，请尝试更通用的中文或英文术语，或从下拉建议中选择" };
+    }
+
+    async function fetchWorks(filter, perPage) {
+      var j = await oaFetch("/works?filter=" + encodeURIComponent(filter) + "&sort=cited_by_count:desc&per-page=" + perPage);
+      return j.results || [];
+    }
+
+    function extractWork(x) {
+      var doi = x.doi ? x.doi.replace("https://doi.org/", "") : null;
+      var bestOa = (x.best_oa_location && x.best_oa_location.pdf_url) || (x.primary_location && x.primary_location.pdf_url) || null;
+      var oaLanding = (x.best_oa_location && x.best_oa_location.landing_page_url) || null;
+      var landing = x.primary_location && x.primary_location.landing_page_url;
+      var source = x.primary_location && x.primary_location.source && x.primary_location.source.display_name ? x.primary_location.source.display_name : null;
+      var authors = (x.authorships || []).map(function (a) { return a.author && a.author.display_name; }).filter(Boolean).slice(0, 8);
+      return {
+        id: x.id, title: x.title || "（无标题）", year: x.publication_year, date: x.publication_date,
+        cited: x.cited_by_count || 0, doi: doi, doiUrl: doi ? "https://doi.org/" + doi : null,
+        pdf: bestOa, oaUrl: oaLanding, url: x.id, landing: landing, source: source,
+        type: x.type, typeLabel: typeLabel(x.type), authors: authors
+      };
+    }
+
+    async function mapLimit(items, limit, fn) {
+      var out = new Array(items.length);
+      var idx = 0;
+      async function worker() {
+        while (idx < items.length) {
+          var i = idx++;
+          out[i] = await fn(items[i], i);
+        }
+      }
+      var workers = [];
+      for (var k = 0; k < Math.min(limit, items.length); k++) workers.push(worker());
+      await Promise.all(workers);
+      return out;
+    }
+
+    async function runSearch(field, university) {
+      var inst = await resolveInstitution(university);
+      if (!inst) return { ok: false, error: "未找到大学「" + university + "」，请检查名称或尝试英文名" };
+
+      var fr = await resolveField(field);
+      if (fr.error) return { ok: false, error: fr.error };
+      var concept = fr.concept;
+      var instShort = inst.shortId;
+      var conShort = concept.shortId;
+
+      var both = await Promise.all([
+        fetchWorks("institutions.id:" + instShort + ",concepts.id:" + conShort, 100),
+        fetchWorks("institutions.id:" + instShort + ",concepts.id:" + conShort + ",type:review", 60),
+        fetchWorks("institutions.id:" + instShort + ",language:zh", 30)
+      ]);
+      var works = both[0];
+      var reviewWorks = both[1];
+      var cnWorks = both[2];
+      var topReviews = reviewWorks.slice(0, 10).map(extractWork);
+      var topChinese = cnWorks.filter(function (w) { return hasChinese(w.title); }).slice(0, 15).map(extractWork);
+
+      var authors = {};
+      function addAuthor(a, kind, cited) {
+        var insts = (a.institutions || []).map(function (i) { return shortId(i.id); }).filter(Boolean);
+        if (insts.indexOf(instShort) < 0) return;
+        var aid = a.author && a.author.id;
+        if (!aid) return;
+        if (!authors[aid]) {
+          authors[aid] = {
+            id: aid, shortId: shortId(aid), name: a.author.display_name, orcid: a.author.orcid || null,
+            affiliation: (a.raw_affiliation_strings && a.raw_affiliation_strings[0]) || "",
+            papers: 0, reviews: 0, cited: 0
+          };
+        }
+        authors[aid][kind]++;
+        authors[aid].cited += cited;
+      }
+      works.forEach(function (w) {
+        if (REVIEW_TYPES[w.type] || !PAPER_TYPES[w.type]) return;
+        (w.authorships || []).forEach(function (a) { addAuthor(a, "papers", w.cited_by_count || 0); });
+      });
+      reviewWorks.forEach(function (w) {
+        (w.authorships || []).forEach(function (a) { addAuthor(a, "reviews", w.cited_by_count || 0); });
+      });
+
+      var top = Object.keys(authors).map(function (k) { return authors[k]; }).sort(function (x, y) {
+        return (y.papers + y.reviews * 2) - (x.papers + x.reviews * 2) || y.cited - x.cited;
+      }).slice(0, 12);
+
+      if (!top.length) {
+        return { ok: false, error: "未找到相关研究人员，请尝试更宽泛的领域，或核对大学名称是否正确" };
+      }
+
+      var professors = await mapLimit(top, 4, async function (a) {
+        await sleep(120);
+        var both2 = await Promise.all([
+          fetchWorks("author.id:" + a.shortId + ",concepts.id:" + conShort, 30),
+          fetchWorks("author.id:" + a.shortId + ",concepts.id:" + conShort + ",type:review", 15),
+          fetchWorks("author.id:" + a.shortId + ",language:zh", 10)
+        ]);
+        var paperWs = both2[0], reviewWs = both2[1], cnWs = both2[2];
+        var papers = [], reviews = [];
+        var chinese = cnWs.filter(function (w) { return hasChinese(w.title); }).slice(0, 8).map(extractWork);
+        paperWs.forEach(function (w) {
+          if (REVIEW_TYPES[w.type] || !PAPER_TYPES[w.type]) return;
+          if (papers.length < 15) papers.push(extractWork(w));
+        });
+        reviewWs.forEach(function (w) {
+          if (REVIEW_TYPES[w.type] && reviews.length < 12) reviews.push(extractWork(w));
+        });
+        return {
+          id: a.shortId, name: a.name, orcid: a.orcid, affiliation: a.affiliation,
+          paperCount: papers.length, reviewCount: reviews.length, cited: a.cited, papers: papers, reviews: reviews, chinese: chinese
+        };
+      });
+
+      return { ok: true, institution: inst, concept: concept, fieldLabel: fr.label, topReviews: topReviews, topChinese: topChinese, professors: professors };
+    }
+
+    // ---------------- 渲染 ----------------
+    function setStatus(type, html) {
+      if (!html) { statusBox.className = "status hidden"; statusBox.innerHTML = ""; return; }
+      statusBox.className = "status " + type;
+      statusBox.innerHTML = html;
+    }
+
+    function workItemHtml(w, idx) {
+      var links = [];
+      if (w.doiUrl) links.push('<a class="link-btn doi" href="' + esc(w.doiUrl) + '" target="_blank" rel="noopener">DOI</a>');
+      if (w.pdf) links.push('<a class="link-btn pdf" href="' + esc(w.pdf) + '" target="_blank" rel="noopener">PDF</a>');
+      if (w.oaUrl && w.oaUrl !== w.pdf) links.push('<a class="link-btn oa" href="' + esc(w.oaUrl) + '" target="_blank" rel="noopener">开放获取页</a>');
+      if (!links.length && w.url) links.push('<a class="link-btn oa" href="' + esc(w.url) + '" target="_blank" rel="noopener">OpenAlex</a>');
+
+      var meta = [];
+      if (w.year) meta.push("📅 " + w.year);
+      if (w.source) meta.push("📖 " + w.source);
+      if (w.cited) meta.push("🔥 被引 " + w.cited);
+      if (w.authors && w.authors.length) meta.push("✍ " + w.authors.join(", "));
+
+      var titleLink = w.doiUrl || w.url || "#";
+      return '<div class="work-item">' +
+        '<p class="work-title" data-title="' + esc(w.title) + '"><a href="' + esc(titleLink) + '" target="_blank" rel="noopener">' + idx + '. ' + esc(w.title) + '</a></p>' +
+        '<div class="work-meta">' + meta.map(esc).join(" · ") + '</div>' +
+        '<div class="work-links">' + links.join("") + '</div>' +
+        '</div>';
+    }
+
+    function professorCardHtml(p, i) {
+      var orcid = p.orcid ? '<span class="orcid">ORCID: ' + esc(p.orcid) + '</span>' : "";
+      var papers = p.papers || [], reviews = p.reviews || [], chinese = p.chinese || [];
+      var papersHtml = papers.length ? papers.map(function (w, k) { return workItemHtml(w, k + 1); }).join("") : '<div class="empty-note">暂无论文记录</div>';
+      var reviewsHtml = reviews.length ? reviews.map(function (w, k) { return workItemHtml(w, k + 1); }).join("") : '<div class="empty-note">暂无综述记录</div>';
+      var chineseHtml = chinese.length ? chinese.map(function (w, k) { return workItemHtml(w, k + 1); }).join("") : '<div class="empty-note">暂无中文文献记录</div>';
+      return '<article class="professor-card" id="prof-' + i + '">' +
+        '<div class="prof-head"><div>' +
+        '<h2 class="prof-name">' + esc(p.name) + orcid + '</h2>' +
+        (p.affiliation ? '<div class="prof-affil">' + esc(p.affiliation) + '</div>' : '') +
+        '</div><button class="export-one-btn" data-export-one="' + i + '">📄 导出此教授 Word</button></div>' +
+        '<div class="prof-stats">' +
+        '<span class="stat-pill">论文 <b>' + papers.length + '</b> 篇</span>' +
+        '<span class="stat-pill">综述 <b>' + reviews.length + '</b> 篇</span>' +
+        '<span class="stat-pill">中文论文 <b>' + chinese.length + '</b> 篇</span>' +
+        '<span class="stat-pill">代表作品累计被引 <b>' + p.cited + '</b></span>' +
+        '</div>' +
+        '<div class="tab-bar">' +
+        '<div class="tab active" data-tab="papers">📄 论文 <span class="count">(' + papers.length + ')</span></div>' +
+        '<div class="tab" data-tab="reviews">📑 综述 <span class="count">(' + reviews.length + ')</span></div>' +
+        '<div class="tab" data-tab="chinese">🇨🇳 中文论文 <span class="count">(' + chinese.length + ')</span></div>' +
+        '</div>' +
+        '<div class="work-list" data-pane="papers">' + papersHtml + '</div>' +
+        '<div class="work-list hidden" data-pane="reviews">' + reviewsHtml + '</div>' +
+        '<div class="work-list hidden" data-pane="chinese">' + chineseHtml + '</div>' +
+        '</article>';
+    }
+
+    function renderResults(data) {
+      var profs = data.professors || [];
+      var inst = data.institution || {};
+      var concept = data.concept || {};
+      var html = '<div class="summary"><div class="meta"><strong>🏛 ' + esc(inst.display_name) + (inst.display_name_zh ? '（' + esc(inst.display_name_zh) + '）' : '') + '</strong>' +
+        '<span class="tag">领域：' + esc(data.fieldLabel || concept.display_name) + '</span><br/>' +
+        '<span style="font-size:13px;color:var(--muted)">共找到 ' + profs.length + ' 位研究人员（按领域内发文量与被引排序）</span></div>' +
+        '<div class="summary-actions">' +
+        '<button class="translate-btn" id="translate-btn">🌐 标题翻译成中文</button>' +
+        '<button class="export-all-btn" id="export-all">📥 导出全部 Word 文档</button>' +
+        '</div></div>';
+
+      var topReviews = data.topReviews || [];
+      if (topReviews.length) {
+        html += '<section class="review-panel"><h2 class="panel-title">📑 领域代表性综述（' + esc(inst.display_name) + (inst.display_name_zh ? '（' + esc(inst.display_name_zh) + '）' : '') + ' · ' + esc(data.fieldLabel || concept.display_name) + '）</h2>' +
+          '<div class="work-list">' + topReviews.map(function (w, i) { return workItemHtml(w, i + 1); }).join("") + '</div></section>';
+      }
+      var topChinese = data.topChinese || [];
+      if (topChinese.length) {
+        html += '<section class="review-panel cn-panel"><h2 class="panel-title">🇨🇳 中文文献（' + esc(inst.display_name) + (inst.display_name_zh ? '（' + esc(inst.display_name_zh) + '）' : '') + '，按被引排序）</h2>' +
+          '<div class="work-list">' + topChinese.map(function (w, i) { return workItemHtml(w, i + 1); }).join("") + '</div></section>';
+      }
+      html += profs.map(professorCardHtml).join("");
+      resultsBox.innerHTML = html;
+
+      document.getElementById("export-all").addEventListener("click", function () { exportWord(currentResult); });
+      document.getElementById("translate-btn").addEventListener("click", translateAllTitles);
+      resultsBox.querySelectorAll(".professor-card").forEach(function (card) {
+        card.querySelectorAll(".tab").forEach(function (tab) {
+          tab.addEventListener("click", function () {
+            var target = tab.getAttribute("data-tab");
+            card.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("active"); });
+            tab.classList.add("active");
+            card.querySelectorAll("[data-pane]").forEach(function (pane) {
+              pane.classList.toggle("hidden", pane.getAttribute("data-pane") !== target);
+            });
+          });
+        });
+        card.querySelectorAll("[data-export-one]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var idx = parseInt(btn.getAttribute("data-export-one"), 10);
+            var p = currentResult.professors[idx];
+            exportWord({ university: currentResult.institution, concept: currentResult.concept, fieldLabel: currentResult.fieldLabel, professors: [p] });
+          });
+        });
+      });
+      resultsBox.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    async function doSearch() {
+      var university = universityInput.value.trim();
+      var field = fieldInput.value.trim();
+      if (!university || !field) { setStatus("error", "⚠️ 请同时填写「大学名称」和「专业/领域」"); return; }
+      searchBtn.disabled = true;
+      resultsBox.innerHTML = "";
+      setStatus("info", '<span class="spinner"></span>正在查询 OpenAlex 学术数据库，识别研究人员并整理其论文与综述，约需 5–20 秒…');
+      try {
+        var data = await runSearch(field, university);
+        if (!data.ok) { setStatus("error", "⚠️ " + esc(data.error || "查询失败")); currentResult = null; return; }
+        currentResult = data;
+        setStatus(null);
+        renderResults(data);
+      } catch (e) {
+        setStatus("error", "⚠️ 查询失败：" + esc(e.message) + "（请确认网络可访问 openalex.org）");
+        currentResult = null;
+      } finally {
+        searchBtn.disabled = false;
+      }
+    }
+
+    // ---------------- Word 导出 ----------------
+    function downloadBlob(blob, filename) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    }
+
+    function buildDocxDoc(payload) {
+      var D = window.docx;
+      var university = payload.university, concept = payload.concept, fieldLabel = payload.fieldLabel;
+      var professors = payload.professors, topReviews = payload.topReviews, topChinese = payload.topChinese;
+      function tr(text, opts) {
+        opts = opts || {};
+        opts.text = String(text); opts.font = "Microsoft YaHei";
+        return new D.TextRun(opts);
+      }
+      function workBlocks(w, idx) {
+        var blocks = [];
+        var titleText = "[" + idx + "] " + w.title;
+        if (w.doiUrl) blocks.push(new D.Paragraph({ children: [new D.ExternalHyperlink({ children: [tr(titleText, { color: "0563C1", underline: {}, size: 20 })], link: w.doiUrl })] }));
+        else if (w.url) blocks.push(new D.Paragraph({ children: [new D.ExternalHyperlink({ children: [tr(titleText, { color: "0563C1", underline: {}, size: 20 })], link: w.url })] }));
+        else blocks.push(new D.Paragraph({ children: [tr(titleText, { size: 20 })] }));
+        var meta = [];
+        if (w.year) meta.push(String(w.year));
+        if (w.source) meta.push(w.source);
+        if (w.cited) meta.push("被引 " + w.cited);
+        if (w.authors && w.authors.length) meta.push("作者: " + w.authors.join(", "));
+        blocks.push(new D.Paragraph({ children: [tr(meta.join(" · "), { size: 16, color: "595959" })] }));
+        var links = [];
+        if (w.doiUrl) links.push(w.doiUrl);
+        if (w.pdf) links.push(w.pdf);
+        if (links.length) blocks.push(new D.Paragraph({ children: [tr("链接: " + links.join("   "), { size: 16, color: "0563C1" })] }));
+        blocks.push(new D.Paragraph({ children: [tr("")] }));
+        return blocks;
+      }
+      var children = [];
+      children.push(new D.Paragraph({ alignment: D.AlignmentType.CENTER, spacing: { after: 200 }, children: [tr("论文seeker · 论文查询报告", { bold: true, size: 40 })] }));
+      children.push(new D.Paragraph({ children: [tr("大学：" + university.display_name + "    领域：" + (fieldLabel || concept.display_name), { size: 22, bold: true })] }));
+      children.push(new D.Paragraph({ spacing: { after: 300 }, children: [tr("生成时间：" + new Date().toLocaleString("zh-CN") + "    研究人员：" + professors.length + " 位", { size: 18, color: "595959" })] }));
+      if (topReviews && topReviews.length) {
+        children.push(new D.Paragraph({ heading: D.HeadingLevel.HEADING_1, children: [tr("领域代表性综述")] }));
+        topReviews.forEach(function (w, i) { children.push.apply(children, workBlocks(w, i + 1)); });
+      }
+      if (topChinese && topChinese.length) {
+        children.push(new D.Paragraph({ heading: D.HeadingLevel.HEADING_1, children: [tr("中文文献")] }));
+        topChinese.forEach(function (w, i) { children.push.apply(children, workBlocks(w, i + 1)); });
+      }
+      professors.forEach(function (p) {
+        children.push(new D.Paragraph({ heading: D.HeadingLevel.HEADING_1, children: [tr(p.name)] }));
+        if (p.affiliation) children.push(new D.Paragraph({ children: [tr("所属机构/院系：" + p.affiliation, { italics: true, size: 18, color: "595959" })] }));
+        children.push(new D.Paragraph({ spacing: { after: 200 }, children: [tr("论文 " + p.papers.length + " 篇 · 综述 " + p.reviews.length + " 篇", { size: 18, color: "595959" })] }));
+        if (p.papers.length) { children.push(new D.Paragraph({ heading: D.HeadingLevel.HEADING_2, children: [tr("论文")] })); p.papers.forEach(function (w, i) { children.push.apply(children, workBlocks(w, i + 1)); }); }
+        if (p.reviews.length) { children.push(new D.Paragraph({ heading: D.HeadingLevel.HEADING_2, children: [tr("综述")] })); p.reviews.forEach(function (w, i) { children.push.apply(children, workBlocks(w, i + 1)); }); }
+        if (p.chinese && p.chinese.length) { children.push(new D.Paragraph({ heading: D.HeadingLevel.HEADING_2, children: [tr("中文论文")] })); p.chinese.forEach(function (w, i) { children.push.apply(children, workBlocks(w, i + 1)); }); }
+      });
+      return new D.Document({ sections: [{ children: children }] });
+    }
+
+    async function exportDocx(payload) {
+      var blob = await window.docx.Packer.toBlob(buildDocxDoc(payload));
+      downloadBlob(blob, "论文查询报告_" + (payload.university.display_name || "结果") + ".docx");
+    }
+
+    function exportDocHtml(payload) {
+      var university = payload.university, concept = payload.concept, fieldLabel = payload.fieldLabel;
+      var professors = payload.professors, topReviews = payload.topReviews, topChinese = payload.topChinese;
+      function workHtml(w, idx) {
+        var title = (w.doiUrl || w.url) ? '<a href="' + esc(w.doiUrl || w.url) + '">' + idx + '. ' + esc(w.title) + '</a>' : idx + '. ' + esc(w.title);
+        var meta = [w.year, w.source, w.cited ? "被引 " + w.cited : null, w.authors && w.authors.length ? "作者: " + w.authors.join(", ") : null].filter(Boolean).join(" · ");
+        var links = [w.doiUrl, w.pdf].filter(Boolean).map(function (u) { return '<a href="' + esc(u) + '">' + esc(u) + '</a>'; }).join(" ");
+        return '<p style="margin:8pt 0 0">' + title + '</p><p style="margin:2pt 0 0;font-size:10pt;color:#595959">' + esc(meta) + '</p>' +
+          (links ? '<p style="margin:2pt 0 0;font-size:10pt;color:#0563C1">链接: ' + links + '</p>' : '');
+      }
+      var h = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>论文seeker · 论文查询报告</title></head><body>';
+      h += '<h1>论文seeker · 论文查询报告</h1>';
+      h += '<p><b>大学：' + esc(university.display_name) + '　领域：' + esc(fieldLabel || concept.display_name) + '</b></p>';
+      if (topReviews && topReviews.length) { h += '<h2>领域代表性综述</h2>'; topReviews.forEach(function (w, i) { h += workHtml(w, i + 1); }); }
+      if (topChinese && topChinese.length) { h += '<h2>中文文献</h2>'; topChinese.forEach(function (w, i) { h += workHtml(w, i + 1); }); }
+      professors.forEach(function (p) {
+        h += '<h2>' + esc(p.name) + '</h2>';
+        if (p.affiliation) h += '<p><i>所属机构/院系：' + esc(p.affiliation) + '</i></p>';
+        h += '<p>论文 ' + p.papers.length + ' 篇 · 综述 ' + p.reviews.length + ' 篇</p>';
+        if (p.papers.length) { h += '<h3>论文</h3>'; p.papers.forEach(function (w, i) { h += workHtml(w, i + 1); }); }
+        if (p.reviews.length) { h += '<h3>综述</h3>'; p.reviews.forEach(function (w, i) { h += workHtml(w, i + 1); }); }
+        if (p.chinese && p.chinese.length) { h += '<h3>中文论文</h3>'; p.chinese.forEach(function (w, i) { h += workHtml(w, i + 1); }); }
+      });
+      h += '</body></html>';
+      var blob = new Blob(["\ufeff", h], { type: "application/msword" });
+      downloadBlob(blob, "论文查询报告_" + (university.display_name || "结果") + ".doc");
+    }
+
+    function exportWord(payload) {
+      if (!payload || !payload.professors || !payload.professors.length) return;
+      try {
+        if (window.docx && window.docx.Packer && window.docx.Document) {
+          exportDocx(payload).catch(function () { exportDocHtml(payload); });
+        } else {
+          exportDocHtml(payload);
+        }
+      } catch (e) {
+        exportDocHtml(payload);
+      }
+    }
+
+    // ---------------- 标题翻译 ----------------
+    var mtCache = {};
+    var mtBusy = false;
+
+    async function translateTitle(text) {
+      if (mtCache[text] !== undefined) return mtCache[text];
+      try {
+        var url = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(text) + "&langpair=en|zh-CN";
+        var res = await fetch(url);
+        var j = await res.json();
+        var zh = null;
+        if (j && j.responseStatus === 200 && j.responseData && j.responseData.translatedText) {
+          zh = j.responseData.translatedText.trim();
+          if (zh.toLowerCase() === text.toLowerCase()) zh = null;
+        }
+        if (j && j.quotaFinished) mtCache["__quota__"] = true;
+        mtCache[text] = zh;
+        return zh;
+      } catch (e) {
+        mtCache[text] = null;
+        return null;
+      }
+    }
+
+    async function translateAllTitles() {
+      if (mtBusy) return;
+      var btn = document.getElementById("translate-btn");
+      var items = Array.prototype.slice.call(resultsBox.querySelectorAll(".work-title[data-title]"));
+      var todo = items.filter(function (el) {
+        return el.getAttribute("data-title") && !el.querySelector(".zh-title");
+      });
+      if (!todo.length) { alert("没有需要翻译的标题（可能已全部翻译）"); return; }
+      mtBusy = true;
+      var done = 0, failed = 0, quotaHit = false, idx = 0, CONC = 3;
+      async function worker() {
+        while (idx < todo.length && !quotaHit) {
+          var el = todo[idx++];
+          var en = el.getAttribute("data-title");
+          var zh = await translateTitle(en);
+          if (zh) {
+            var div = document.createElement("div");
+            div.className = "zh-title";
+            div.textContent = "中文：" + zh;
+            el.appendChild(div);
+            done++;
+          } else {
+            failed++;
+            if (mtCache["__quota__"]) quotaHit = true;
+          }
+          btn.textContent = "🌐 翻译中 " + (done + failed) + "/" + todo.length;
+        }
+      }
+      var workers = [];
+      for (var k = 0; k < CONC; k++) workers.push(worker());
+      await Promise.all(workers);
+      mtBusy = false;
+      btn.textContent = "🌐 标题翻译成中文";
+      var msg = "已翻译 " + done + " 条标题";
+      if (quotaHit) msg += "（免费翻译额度已用完，其余标题暂未翻译）";
+      else if (failed) msg += "，" + failed + " 条翻译失败";
+      setStatus("info", msg);
+    }
+
+    // ---------------- 初始化 ----------------
+    function loadSuggestions() {
+      var opts = [], k;
+      for (k in FIELD_DICT) {
+        opts.push('<option value="' + esc(k) + ' · ' + esc(FIELD_DICT[k]) + '"></option>');
+      }
+      datalist.innerHTML = opts.join("");
+    }
+
+    searchBtn.addEventListener("click", doSearch);
+    [universityInput, fieldInput].forEach(function (el) {
+      el.addEventListener("keydown", function (e) { if (e.key === "Enter") doSearch(); });
+    });
+    loadSuggestions();
+  })();
+  </script>
+</body>
+</html>
