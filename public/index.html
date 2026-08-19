@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>论文seeker · 按大学与领域检索教授论文与综述</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <h1>📚 论文seeker</h1>
+      <p class="subtitle">输入「大学名称」和「专业 / 领域」，一键获取该机构研究人员的论文与综述，并导出 Word 文档</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="search-card">
+      <div class="field-row">
+        <div class="input-group">
+          <label for="university">🏛 大学名称</label>
+          <input id="university" type="text" placeholder="例如：清华大学 / Tsinghua University" autocomplete="off" />
+        </div>
+        <div class="input-group">
+          <label for="field">🔬 专业 / 领域</label>
+          <input id="field" type="text" list="field-suggestions" placeholder="例如：机器学习 / Machine learning" autocomplete="off" />
+          <datalist id="field-suggestions"></datalist>
+        </div>
+        <button id="search-btn" class="primary-btn">查询</button>
+      </div>
+      <div class="hint">💡 领域支持中文 / 英文 / 简称（如 ML、AI），并支持模糊匹配；数据来源：<a href="https://openalex.org" target="_blank" rel="noopener">OpenAlex</a> 学术数据库</div>
+    </section>
+
+    <details class="help-card" open>
+      <summary>📖 使用说明（点击可收起）</summary>
+      <div class="help-body">
+        <h3>① 如何查询</h3>
+        <ol>
+          <li>在「大学名称」输入高校名称，<b>中英文均可</b>（如「清华大学」「Tsinghua University」）；</li>
+          <li>在「专业/领域」输入领域名称，<b>中英文、简称均可</b>，支持模糊匹配（如「机器学习」「machine learning」「ML」「machine learn」）；</li>
+          <li>点击「查询」，等待约 5–20 秒即可看到结果。</li>
+        </ol>
+
+        <h3>② 结果怎么看</h3>
+        <ul>
+          <li><b>领域代表性综述</b>：该大学在该领域被引最高的综述文章；</li>
+          <li><b>研究人员卡片</b>：每位研究人员分「论文」与「综述」两个标签页；</li>
+          <li>「论文」= 研究型论文，「综述」= 文献综述 / 调查类文章；</li>
+          <li>每条文献按「被引次数」从高到低排序，并标注年份、期刊、作者。</li>
+        </ul>
+
+        <h3>③ 链接含义</h3>
+        <ul>
+          <li><b>DOI</b>：论文的正式链接（数字对象标识符），点击直达原文；</li>
+          <li><b>PDF</b>：开放获取的免费全文下载；</li>
+          <li><b>开放获取页 / OpenAlex</b>：出版商页面或 OpenAlex 数据库记录页。</li>
+        </ul>
+
+        <h3>④ 导出 Word 文档</h3>
+        <ul>
+          <li>点击「导出全部 Word」下载所有研究人员的结果；</li>
+          <li>或点击某教授卡片右上角「导出此教授 Word」单独导出；</li>
+          <li>生成的 .docx 包含标题、年份、期刊、被引量与可点击链接。</li>
+        </ul>
+
+        <p class="help-note">⚠️ 数据来源于 OpenAlex（免费学术数据库），结果仅供参考，正式引用前请核对原始文献。</p>
+      </div>
+    </details>
+
+    <section id="status" class="status hidden"></section>
+
+    <section id="results" class="results"></section>
+  </main>
+
+  <footer class="footer">
+    <p>数据来源于 OpenAlex（CC0 授权）· 结果按被引量排序 · 仅供参考，引用请核对原始文献</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
