@@ -70,17 +70,24 @@ function walk(dir, base, out) {
     process.exit(1);
   }
 
-  // 2. 上传文件
+  // 2. 上传/更新文件（已存在的文件自动带上 sha，内容未变化则跳过）
   const base = process.cwd();
   const files = walk(base, base, []);
-  let ok = 0, fail = 0;
+  let ok = 0, fail = 0, skip = 0;
   for (const rel of files) {
     const content = fs.readFileSync(path.join(base, rel)).toString("base64");
-    const u = await api("PUT", `/repos/${GH_USER}/${REPO}/contents/${rel}`, {
-      message: "上传 " + rel,
-      content,
-      branch: "main",
-    });
+    const existing = await api("GET", `/repos/${GH_USER}/${REPO}/contents/${rel}?ref=main`);
+    if (existing.status === 200) {
+      const remote = (existing.data.content || "").replace(/\n/g, "");
+      if (remote === content) {
+        console.log("  = 未变化", rel);
+        skip++;
+        continue;
+      }
+    }
+    const body = { message: "更新 " + rel, content, branch: "main" };
+    if (existing.status === 200 && existing.data.sha) body.sha = existing.data.sha;
+    const u = await api("PUT", `/repos/${GH_USER}/${REPO}/contents/${rel}`, body);
     if (u.status === 201 || u.status === 200) {
       console.log("  ✓", rel);
       ok++;
@@ -90,6 +97,6 @@ function walk(dir, base, out) {
     }
   }
 
-  console.log(`\n完成：成功 ${ok} 个，失败 ${fail} 个`);
+  console.log(`\n完成：更新 ${ok} 个，未变化 ${skip} 个，失败 ${fail} 个`);
   console.log(`仓库地址：https://github.com/${GH_USER}/${REPO}`);
 })();
