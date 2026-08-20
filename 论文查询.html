@@ -207,13 +207,47 @@
       "操作系统": "Operating system", "数据库": "Database", "通信": "Telecommunications",
       "控制工程": "Control engineering", "信号处理": "Signal processing", "优化": "Mathematical optimization",
       "计算生物学": "Computational biology", "药物研发": "Drug discovery", "海洋科学": "Oceanography",
-      "地质学": "Geology", "天文学": "Astronomy"
+      "地质学": "Geology", "天文学": "Astronomy",
+      "云计算": "Cloud computing", "边缘计算": "Edge computing", "分布式系统": "Distributed computing", "并行计算": "Parallel computing",
+      "编程语言": "Programming language", "编译器": "Compiler", "计算机体系结构": "Computer architecture", "虚拟现实": "Virtual reality",
+      "增强现实": "Augmented reality", "多媒体": "Multimedia", "嵌入式系统": "Embedded system", "集成电路": "Integrated circuit",
+      "微电子": "Microelectronics", "光电子": "Optoelectronics", "电磁场": "Electromagnetic field", "微波": "Microwave",
+      "雷达": "Radar", "天线": "Antenna (electronics)", "模式识别": "Pattern recognition", "智能控制": "Intelligent control",
+      "车辆工程": "Automotive engineering", "机械制造": "Manufacturing engineering", "精密仪器": "Instrumentation", "金属材料": "Metallurgy",
+      "高分子材料": "Polymer science", "复合材料": "Composite material", "热能工程": "Thermal engineering", "动力工程": "Power engineering",
+      "核能": "Nuclear power", "新能源": "Renewable energy", "电力系统": "Electric power system", "电机": "Electric motor",
+      "高电压": "High voltage", "建筑学": "Architecture", "城乡规划": "Urban planning", "结构工程": "Structural engineering",
+      "岩土工程": "Geotechnical engineering", "桥梁工程": "Bridge engineering", "水利工程": "Hydraulic engineering", "环境工程": "Environmental engineering",
+      "水处理": "Water treatment", "大气污染": "Air pollution", "交通运输": "Transportation engineering", "轨道交通": "Rail transport",
+      "船舶与海洋工程": "Naval architecture", "制药工程": "Pharmaceutical engineering", "食品科学": "Food science", "食品工程": "Food engineering",
+      "安全工程": "Safety engineering", "矿业工程": "Mining engineering", "石油工程": "Petroleum engineering", "地质工程": "Engineering geology",
+      "应用数学": "Applied mathematics", "计算数学": "Computational mathematics", "概率论": "Probability theory", "运筹学": "Operations research",
+      "理论物理": "Theoretical physics", "粒子物理": "Particle physics", "原子分子物理": "Atomic physics", "声学": "Acoustics",
+      "等离子体": "Plasma (physics)", "分析化学": "Analytical chemistry", "高分子化学": "Polymer chemistry", "植物学": "Botany",
+      "动物学": "Zoology", "生理学": "Physiology", "发育生物学": "Developmental biology", "进化生物学": "Evolutionary biology",
+      "生物物理": "Biophysics", "自然地理": "Physical geography", "人文地理": "Human geography", "地理信息系统": "Geographic information system",
+      "地球物理": "Geophysics", "土壤学": "Soil science", "农学": "Agronomy", "植物保护": "Plant protection",
+      "园艺": "Horticulture", "动物科学": "Animal science", "兽医学": "Veterinary medicine", "林学": "Forestry",
+      "水产": "Aquaculture", "农业工程": "Agricultural engineering", "基础医学": "Biomedicine", "口腔医学": "Dentistry",
+      "中医学": "Traditional Chinese medicine", "药学": "Pharmacy", "护理学": "Nursing", "预防医学": "Preventive medicine",
+      "内科学": "Internal medicine", "外科学": "Surgery", "儿科学": "Pediatrics", "妇产科学": "Obstetrics and gynaecology",
+      "眼科学": "Ophthalmology", "耳鼻喉": "Otolaryngology", "皮肤病": "Dermatology", "神经病学": "Neurology",
+      "精神病学": "Psychiatry", "麻醉": "Anesthesiology", "病理学": "Pathology", "康复医学": "Rehabilitation medicine",
+      "会计学": "Accounting", "市场营销": "Marketing", "工商管理": "Business administration", "人力资源": "Human resource management",
+      "国际贸易": "International trade", "产业经济": "Industrial organization", "区域经济": "Regional economics", "数量经济": "Econometrics",
+      "财政学": "Public finance", "保险学": "Insurance", "旅游管理": "Tourism management", "物流管理": "Logistics",
+      "电子商务": "E-commerce", "信息管理": "Information management", "法学": "Law", "政治学": "Political science",
+      "马克思主义": "Marxism", "历史学": "History", "考古学": "Archaeology", "哲学": "Philosophy",
+      "逻辑学": "Logic", "伦理学": "Ethics", "新闻传播": "Communication", "语言学": "Linguistics",
+      "中国语言文学": "Chinese literature", "外国语言文学": "Foreign language", "图书情报": "Library science", "艺术学": "Art",
+      "音乐": "Music", "美术": "Fine art", "设计学": "Design", "戏剧": "Theatre", "影视": "Film"
     };
 
     var FIELD_ALIASES = {
       "ai": "人工智能", "ml": "机器学习", "dl": "深度学习", "nlp": "自然语言处理",
       "cv": "计算机视觉", "rl": "强化学习", "dm": "数据挖掘", "cs": "计算机科学",
-      "hci": "人机交互", "iot": "物联网", "qc": "量子计算"
+      "hci": "人机交互", "iot": "物联网", "qc": "量子计算", "gis": "地理信息系统",
+      "bigdata": "大数据", "econ": "经济学", "se": "软件工程"
     };
 
     var REVIEW_TYPES = { review: 1 };
@@ -269,8 +303,129 @@
       return null;
     }
 
+    var UNIV_ALIASES = {
+      "清华大学": "Tsinghua University", "清华": "Tsinghua University", "tsinghua": "Tsinghua University", "thu": "Tsinghua University",
+      "北京大学": "Peking University", "北大": "Peking University", "pku": "Peking University",
+      "复旦大学": "Fudan University", "复旦": "Fudan University", "fudan": "Fudan University",
+      "上海交通大学": "Shanghai Jiao Tong University", "上海交大": "Shanghai Jiao Tong University", "上交": "Shanghai Jiao Tong University", "sjtu": "Shanghai Jiao Tong University",
+      "浙江大学": "Zhejiang University", "浙大": "Zhejiang University", "zju": "Zhejiang University",
+      "南京大学": "Nanjing University", "南大": "Nanjing University", "nju": "Nanjing University",
+      "中国科学技术大学": "University of Science and Technology of China", "中科大": "University of Science and Technology of China", "中国科技大学": "University of Science and Technology of China", "ustc": "University of Science and Technology of China",
+      "哈尔滨工业大学": "Harbin Institute of Technology", "哈工大": "Harbin Institute of Technology", "hit": "Harbin Institute of Technology",
+      "西安交通大学": "Xi'an Jiaotong University", "西安交大": "Xi'an Jiaotong University", "西交": "Xi'an Jiaotong University", "xjtu": "Xi'an Jiaotong University",
+      "武汉大学": "Wuhan University", "武大": "Wuhan University", "whu": "Wuhan University",
+      "华中科技大学": "Huazhong University of Science and Technology", "华科": "Huazhong University of Science and Technology", "hust": "Huazhong University of Science and Technology",
+      "中山大学": "Sun Yat-sen University", "中山": "Sun Yat-sen University", "sysu": "Sun Yat-sen University",
+      "同济大学": "Tongji University", "同济": "Tongji University",
+      "东南大学": "Southeast University", "东南": "Southeast University", "seu": "Southeast University",
+      "北京航空航天大学": "Beihang University", "北航": "Beihang University", "buaa": "Beihang University",
+      "北京理工大学": "Beijing Institute of Technology", "北理工": "Beijing Institute of Technology", "bit": "Beijing Institute of Technology",
+      "四川大学": "Sichuan University", "川大": "Sichuan University", "scu": "Sichuan University",
+      "天津大学": "Tianjin University", "天大": "Tianjin University", "tju": "Tianjin University",
+      "南开大学": "Nankai University", "南开": "Nankai University",
+      "山东大学": "Shandong University", "山大": "Shandong University", "sdu": "Shandong University",
+      "厦门大学": "Xiamen University", "厦大": "Xiamen University", "xmu": "Xiamen University",
+      "吉林大学": "Jilin University", "吉大": "Jilin University", "jlu": "Jilin University",
+      "中南大学": "Central South University", "中南": "Central South University", "csu": "Central South University",
+      "湖南大学": "Hunan University", "湖大": "Hunan University", "hnu": "Hunan University",
+      "重庆大学": "Chongqing University", "重大": "Chongqing University", "cqu": "Chongqing University",
+      "电子科技大学": "University of Electronic Science and Technology of China", "电子科大": "University of Electronic Science and Technology of China", "uestc": "University of Electronic Science and Technology of China",
+      "西安电子科技大学": "Xidian University", "西电": "Xidian University",
+      "北京邮电大学": "Beijing University of Posts and Telecommunications", "北邮": "Beijing University of Posts and Telecommunications", "bupt": "Beijing University of Posts and Telecommunications",
+      "南京航空航天大学": "Nanjing University of Aeronautics and Astronautics", "南航": "Nanjing University of Aeronautics and Astronautics", "nuaa": "Nanjing University of Aeronautics and Astronautics",
+      "南京理工大学": "Nanjing University of Science and Technology", "南理工": "Nanjing University of Science and Technology",
+      "北京交通大学": "Beijing Jiaotong University", "北交": "Beijing Jiaotong University",
+      "西南交通大学": "Southwest Jiaotong University", "西南交大": "Southwest Jiaotong University",
+      "北京师范大学": "Beijing Normal University", "北师大": "Beijing Normal University", "bnu": "Beijing Normal University",
+      "华东师范大学": "East China Normal University", "华东师大": "East China Normal University", "华师大": "East China Normal University", "ecnu": "East China Normal University",
+      "华中师范大学": "Central China Normal University", "华中师大": "Central China Normal University",
+      "东北师范大学": "Northeast Normal University", "东北师大": "Northeast Normal University",
+      "中国人民大学": "Renmin University of China", "人大": "Renmin University of China", "ruc": "Renmin University of China",
+      "上海财经大学": "Shanghai University of Finance and Economics", "上财": "Shanghai University of Finance and Economics",
+      "中央财经大学": "Central University of Finance and Economics", "央财": "Central University of Finance and Economics",
+      "对外经济贸易大学": "University of International Business and Economics", "对外经贸": "University of International Business and Economics", "uibe": "University of International Business and Economics",
+      "中国政法大学": "China University of Political Science and Law", "中国政法": "China University of Political Science and Law", "法大": "China University of Political Science and Law",
+      "中国传媒大学": "Communication University of China", "中传": "Communication University of China",
+      "中国农业大学": "China Agricultural University", "中农": "China Agricultural University", "中国农大": "China Agricultural University",
+      "华中农业大学": "Huazhong Agricultural University", "华农": "Huazhong Agricultural University",
+      "南京农业大学": "Nanjing Agricultural University", "南农": "Nanjing Agricultural University",
+      "中国海洋大学": "Ocean University of China", "海大": "Ocean University of China",
+      "中国石油大学": "China University of Petroleum", "中石油": "China University of Petroleum",
+      "中国矿业大学": "China University of Mining and Technology", "中国矿业": "China University of Mining and Technology",
+      "中国地质大学": "China University of Geosciences", "中国地质": "China University of Geosciences",
+      "河海大学": "Hohai University", "河海": "Hohai University",
+      "西北工业大学": "Northwestern Polytechnical University", "西工大": "Northwestern Polytechnical University", "nwpu": "Northwestern Polytechnical University",
+      "兰州大学": "Lanzhou University", "兰大": "Lanzhou University", "lzu": "Lanzhou University",
+      "东北大学": "Northeastern University, China",
+      "大连理工大学": "Dalian University of Technology", "大连理工": "Dalian University of Technology", "大工": "Dalian University of Technology", "dlut": "Dalian University of Technology",
+      "华南理工大学": "South China University of Technology", "华南理工": "South China University of Technology", "华工": "South China University of Technology", "scut": "South China University of Technology",
+      "西南财经大学": "Southwestern University of Finance and Economics", "西财": "Southwestern University of Finance and Economics",
+      "国防科技大学": "National University of Defense Technology", "国防科大": "National University of Defense Technology",
+      "苏州大学": "Soochow University", "苏大": "Soochow University",
+      "郑州大学": "Zhengzhou University", "郑大": "Zhengzhou University",
+      "云南大学": "Yunnan University", "云大": "Yunnan University",
+      "上海大学": "Shanghai University", "上大": "Shanghai University",
+      "深圳大学": "Shenzhen University", "深大": "Shenzhen University",
+      "南方科技大学": "Southern University of Science and Technology", "南科大": "Southern University of Science and Technology",
+      "华东理工大学": "East China University of Science and Technology", "华理": "East China University of Science and Technology",
+      "北京科技大学": "University of Science and Technology Beijing", "北科大": "University of Science and Technology Beijing",
+      "北京工业大学": "Beijing University of Technology", "北工大": "Beijing University of Technology",
+      "上海科技大学": "ShanghaiTech University", "上科大": "ShanghaiTech University",
+      "首都医科大学": "Capital Medical University", "首医": "Capital Medical University",
+      "南京医科大学": "Nanjing Medical University", "南医": "Nanjing Medical University",
+      "麻省理工": "Massachusetts Institute of Technology", "mit": "Massachusetts Institute of Technology",
+      "哈佛": "Harvard University", "harvard": "Harvard University",
+      "斯坦福": "Stanford University", "stanford": "Stanford University",
+      "剑桥": "University of Cambridge", "cambridge": "University of Cambridge",
+      "牛津": "University of Oxford", "oxford": "University of Oxford",
+      "伯克利": "University of California, Berkeley", "uc berkeley": "University of California, Berkeley", "berkeley": "University of California, Berkeley",
+      "加州理工": "California Institute of Technology", "caltech": "California Institute of Technology",
+      "普林斯顿": "Princeton University", "princeton": "Princeton University",
+      "耶鲁": "Yale University", "yale": "Yale University",
+      "哥伦比亚": "Columbia University", "columbia": "Columbia University",
+      "康奈尔": "Cornell University", "cornell": "Cornell University",
+      "卡内基梅隆": "Carnegie Mellon University", "cmu": "Carnegie Mellon University",
+      "苏黎世联邦理工": "ETH Zurich", "eth": "ETH Zurich",
+      "帝国理工": "Imperial College London", "imperial": "Imperial College London",
+      "伦敦大学学院": "University College London", "ucl": "University College London",
+      "多伦多": "University of Toronto", "toronto": "University of Toronto",
+      "新加坡国立": "National University of Singapore", "nus": "National University of Singapore",
+      "南洋理工": "Nanyang Technological University", "ntu": "Nanyang Technological University",
+      "香港大学": "University of Hong Kong", "港大": "University of Hong Kong", "hku": "University of Hong Kong",
+      "香港中文大学": "Chinese University of Hong Kong", "港中文": "Chinese University of Hong Kong", "cuhk": "Chinese University of Hong Kong",
+      "香港科技大学": "Hong Kong University of Science and Technology", "港科大": "Hong Kong University of Science and Technology", "hkust": "Hong Kong University of Science and Technology",
+      "东京大学": "University of Tokyo", "utokyo": "University of Tokyo",
+      "首尔大学": "Seoul National University", "snu": "Seoul National University",
+      "kaist": "KAIST"
+    };
+
+    function findUnivName(input) {
+      var term = norm(input);
+      if (!term) return null;
+      var k, kn, best, bestLen;
+      // 1. 精确匹配
+      for (k in UNIV_ALIASES) {
+        if (norm(k) === term) return UNIV_ALIASES[k];
+      }
+      // 2. 输入是词典键的前缀（如「清华」→「清华大学」）
+      best = null; bestLen = Infinity;
+      for (k in UNIV_ALIASES) {
+        kn = norm(k);
+        if (kn && kn.indexOf(term) === 0 && kn.length < bestLen) { bestLen = kn.length; best = UNIV_ALIASES[k]; }
+      }
+      if (best) return best;
+      // 3. 词典键是输入的子串
+      best = null; bestLen = 0;
+      for (k in UNIV_ALIASES) {
+        kn = norm(k);
+        if (kn && term.indexOf(kn) >= 0 && kn.length > bestLen) { bestLen = kn.length; best = UNIV_ALIASES[k]; }
+      }
+      return best;
+    }
+
     async function resolveInstitution(q) {
-      var j = await oaFetch("/institutions?search=" + encodeURIComponent(q) + "&per-page=5");
+      var query = findUnivName(q) || q;
+      var j = await oaFetch("/institutions?search=" + encodeURIComponent(query) + "&per-page=5");
       var r = j.results && j.results[0];
       if (!r) return null;
       return { id: r.id, shortId: shortId(r.id), display_name: r.display_name, display_name_zh: pickZhName(r.display_name_alternatives), country_code: r.country_code };
